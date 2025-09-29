@@ -4,14 +4,21 @@ import 'package:digital_egypt_pioneers/widgets/ItemCard.dart';
 class Item {
   String title;
   int counter;
+  String imagePath;
+  double price;
 
-  Item({required this.title, required this.counter});
+  Item({
+    required this.title,
+    required this.counter,
+    required this.imagePath,
+    required this.price,
+  });
 }
 
 class CartScreen extends StatefulWidget {
   final int index;
 
-  CartScreen({required this.index, super.key});
+  const CartScreen({required this.index, super.key});
 
   @override
   _CartScreenState createState() => _CartScreenState();
@@ -19,15 +26,21 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   final List<Item> items = List<Item>.generate(
-    20,
-    (i) => Item(title: "Item ${i + 1}", counter: 1),
+    5,
+    (i) => Item(
+      title: "Shoe ${i + 1}",
+      counter: 1,
+      imagePath: "assets/images/shoe${i + 1}.jpg", // ✅ بدون "_"
+      price: 500 + (i * 100),
+    ),
   );
+
   final List<String> users = List<String>.generate(5, (i) => "User ${i + 1}");
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Cart ${widget.index}')),
+      appBar: AppBar(title: Text('Cart ${widget.index + 1}')),
       body: Center(
         child: Container(
           width: double.infinity,
@@ -36,6 +49,7 @@ class _CartScreenState extends State<CartScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // 🔹 Users Section
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -43,18 +57,15 @@ class _CartScreenState extends State<CartScreen> {
                     "Cart's Users",
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(width: 10),
                   TextButton(
                     style: TextButton.styleFrom(
                       backgroundColor: Colors.grey,
-                      foregroundColor: Colors.white,),
+                      foregroundColor: Colors.white,
+                    ),
                     onPressed: () {},
-                    child: Text(
+                    child: const Text(
                       "Add User",
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
@@ -68,15 +79,9 @@ class _CartScreenState extends State<CartScreen> {
                     return Card(
                       color: Colors.grey[850],
                       elevation: 2.0,
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 8.0,
-                        vertical: 4.0,
-                      ),
+                      margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                       child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20.0,
-                          vertical: 10.0,
-                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
                         title: Text(
                           users[index],
                           style: const TextStyle(
@@ -84,13 +89,16 @@ class _CartScreenState extends State<CartScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        trailing: const Icon(Icons.person, size: 16.0),
+                        trailing: const Icon(Icons.person, size: 18.0),
                       ),
                     );
                   },
                 ),
               ),
+
               const SizedBox(height: 20),
+
+              // 🔹 Items Section
               const Text(
                 'Items',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -102,9 +110,10 @@ class _CartScreenState extends State<CartScreen> {
                   itemCount: items.length,
                   itemBuilder: (BuildContext context, int index) {
                     return ItemCard(
-                      imagePath: 'assets/images/shoe_image.jpg',
+                      imagePath: items[index].imagePath,
                       itemName: items[index].title,
                       counterValue: items[index].counter,
+                      price: items[index].price,
                       onIncrement: () {
                         setState(() {
                           items[index].counter++;
@@ -113,9 +122,7 @@ class _CartScreenState extends State<CartScreen> {
                       onDecrement: () {
                         setState(() {
                           if (items[index].counter > 1) {
-                            setState(() {
-                              items[index].counter--;
-                            });
+                            items[index].counter--;
                           }
                         });
                       },
@@ -129,7 +136,6 @@ class _CartScreenState extends State<CartScreen> {
       ),
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 16.0, left: 32.0, right: 0.0),
-        // Adjusted padding
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [

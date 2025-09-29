@@ -4,6 +4,7 @@ class ItemCard extends StatelessWidget {
   final String imagePath;
   final String itemName;
   final int counterValue;
+  final double price;
   final VoidCallback onIncrement;
   final VoidCallback onDecrement;
 
@@ -11,6 +12,7 @@ class ItemCard extends StatelessWidget {
     required this.imagePath,
     required this.itemName,
     required this.counterValue,
+    required this.price,
     required this.onIncrement,
     required this.onDecrement,
     super.key,
@@ -34,25 +36,37 @@ class ItemCard extends StatelessWidget {
             ),
             child: Image.asset(
               imagePath,
-              width: 200,
+              width: 130,
               height: 130,
               fit: BoxFit.cover,
             ),
           ),
           const SizedBox(width: 16),
-
           Expanded(
-            child: Text(
-              itemName,
-              style: const TextStyle(
-                fontSize: 18.0,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  itemName,
+                  style: const TextStyle(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  "$price EGP",
+                  style: const TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.amber,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(width: 16),
-
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
