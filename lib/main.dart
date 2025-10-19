@@ -4,6 +4,11 @@ import 'package:digital_egypt_pioneers/screens/ProfileScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:digital_egypt_pioneers/bloc/auth/auth_bloc.dart';
+import 'package:digital_egypt_pioneers/bloc/auth/auth_state.dart';
+import 'package:digital_egypt_pioneers/screens/login_page.dart';
+import 'package:digital_egypt_pioneers/services/auth_repository.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,34 +28,46 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFF1F1F21),
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple, brightness: Brightness.dark),
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Colors.white),
-          bodyMedium: TextStyle(color: Colors.white),
-          displayLarge: TextStyle(color: Colors.white),
-          displayMedium: TextStyle(color: Colors.white),
-          displaySmall: TextStyle(color: Colors.white),
-          headlineMedium: TextStyle(color: Colors.white),
-          headlineSmall: TextStyle(color: Colors.white),
-          titleLarge: TextStyle(color: Colors.white),
-          titleMedium: TextStyle(color: Colors.white),
-          titleSmall: TextStyle(color: Colors.white),
-          bodySmall: TextStyle(color: Colors.white),
-          labelLarge: TextStyle(color: Colors.white),
-          labelSmall: TextStyle(color: Colors.white),
+    final authRepository = AuthRepository();
+
+    return BlocProvider<AuthBloc>(
+      create: (context) => AuthBloc(authRepository: authRepository),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Flutter Demo',
+        theme: ThemeData(
+            scaffoldBackgroundColor: const Color(0xFF1F1F21),
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple, brightness: Brightness.dark),
+            textTheme: const TextTheme(
+              bodyLarge: TextStyle(color: Colors.white),
+              bodyMedium: TextStyle(color: Colors.white),
+              displayLarge: TextStyle(color: Colors.white),
+              displayMedium: TextStyle(color: Colors.white),
+              displaySmall: TextStyle(color: Colors.white),
+              headlineMedium: TextStyle(color: Colors.white),
+              headlineSmall: TextStyle(color: Colors.white),
+              titleLarge: TextStyle(color: Colors.white),
+              titleMedium: TextStyle(color: Colors.white),
+              titleSmall: TextStyle(color: Colors.white),
+              bodySmall: TextStyle(color: Colors.white),
+              labelLarge: TextStyle(color: Colors.white),
+              labelSmall: TextStyle(color: Colors.white),
+            ),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Color(0xFF1F1F21),
+              titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+              iconTheme: IconThemeData(color: Colors.white),
+            )
         ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF1F1F21),
-          titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-          iconTheme: IconThemeData(color: Colors.white),
-        )
+        home: BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            if (state is Authenticated) {
+              return const MainScreen();
+            }
+            return const LoginPage();
+          },
+        ),
       ),
-      home: const MainScreen(),
     );
   }
 }
