@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AuthRepository {
   // Get instance of FirebaseAuth
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   Stream<User?> get user => _auth.authStateChanges();
 
@@ -13,6 +15,14 @@ class AuthRepository {
         email: email,
         password: password,
       );
+      // After creating the user, create a new document in the 'users' collection
+      if (userCredential.user != null) {
+        await _db.collection('users').doc(userCredential.user!.uid).set({
+          'uid': userCredential.user!.uid,
+          'email': email,
+        });
+      }
+
       return userCredential;
     } on FirebaseAuthException catch (e) {
       // Instead of returning null, we re-throw the exception
