@@ -26,7 +26,6 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: BlocListener<AuthBloc, AuthState>(
-        // This listener handles side effects like showing SnackBars or dialogs
         listener: (context, state) {
           if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -34,84 +33,88 @@ class _LoginPageState extends State<LoginPage> {
             );
           }
         },
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'Welcome!',
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 32),
-              // Email Text Field
-              TextField(
-                controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Logo
+                Image.asset(
+                  'assets/images/Logo.jpg',
+                  height: 300,
+                  width: 300,
                 ),
-                keyboardType: TextInputType.emailAddress,
-              ),
-              const SizedBox(height: 16),
-              // Password Text Field
-              TextField(
-                controller: _passwordController,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 20),
+                
+                // Email field
+                TextField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.emailAddress,
                 ),
-                obscureText: true,
-              ),
-              const SizedBox(height: 24),
-              // This BlocBuilder will show a loading indicator when needed
-              BlocBuilder<AuthBloc, AuthState>(
-                builder: (context, state) {
-                  if (state is AuthLoading) {
-                    return const CircularProgressIndicator();
-                  }
-                  return Column(
-                    children: [
-                      // Sign In Button
-                      ElevatedButton(
-                        onPressed: () {
-                          final email = _emailController.text.trim();
-                          final password = _passwordController.text.trim();
-                          if (email.isNotEmpty && password.isNotEmpty) {
-                            context
-                                .read<AuthBloc>()
-                                .add(SignInRequested(email, password));
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(double.infinity, 50),
+                const SizedBox(height: 16),
+                // Password field
+                TextField(
+                  controller: _passwordController,
+                  decoration: const InputDecoration(
+                    labelText: 'Password',
+                    border: OutlineInputBorder(),
+                  ),
+                  obscureText: true,
+                ),
+                const SizedBox(height: 24),
+                // BlocBuilder for loading
+                BlocBuilder<AuthBloc, AuthState>(
+                  builder: (context, state) {
+                    if (state is AuthLoading) {
+                      return const CircularProgressIndicator();
+                    }
+                    return Column(
+                      children: [
+                        // Sign In button
+                        ElevatedButton(
+                          onPressed: () {
+                            final email = _emailController.text.trim();
+                            final password = _passwordController.text.trim();
+                            if (email.isNotEmpty && password.isNotEmpty) {
+                              context
+                                  .read<AuthBloc>()
+                                  .add(SignInRequested(email, password));
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 50),
+                          ),
+                          child: const Text('Sign In'),
                         ),
-                        child: const Text('Sign In'),
-                      ),
-                      const SizedBox(height: 12),
-                      // Sign Up Button
-                      ElevatedButton(
-                        onPressed: () {
-                          final email = _emailController.text.trim();
-                          final password = _passwordController.text.trim();
-                          if (email.isNotEmpty && password.isNotEmpty) {
-                            context
-                                .read<AuthBloc>()
-                                .add(SignUpRequested(email, password));
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(double.infinity, 50),
-                          backgroundColor: Colors.grey[700],
+                        const SizedBox(height: 12),
+                        // Sign Up button
+                        ElevatedButton(
+                          onPressed: () {
+                            final email = _emailController.text.trim();
+                            final password = _passwordController.text.trim();
+                            if (email.isNotEmpty && password.isNotEmpty) {
+                              context
+                                  .read<AuthBloc>()
+                                  .add(SignUpRequested(email, password));
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 50),
+                            backgroundColor: Colors.grey[700],
+                          ),
+                          child: const Text('Sign Up'),
                         ),
-                        
-                        child: const Text('Sign Up'),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ],
+                      ],
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),
