@@ -105,7 +105,7 @@ class _LoginPageState extends State<LoginPage> {
                           backgroundColor: Colors.grey[700],
                         ),
                         
-                        child: const Text('Signnnnnnnn Up'),
+                        child: const Text('Sign Up'),
                       ),
                     ],
                   );
