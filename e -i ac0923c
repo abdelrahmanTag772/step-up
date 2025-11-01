@@ -1,0 +1,16 @@
+[33m71bebcb[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Fix logo issue and update login page
+[33m248e95d[m ty
+[33m9e7cd20[m try
+[33ma800592[m Resolved merge conflicts
+[33mac0923c[m Updated login page UI and logic
+[33m3070e08[m Added all project files
+[33mc4b67b9[m firestore
+[33m2d4738d[m auth bloc
+[33me46e6ed[m feat: Integrate Firebase for Android & iOS
+[33m17ed201[m ios
+[33m6b0348b[m android
+[33m5fdb409[m Delete assets/images/shoe_image.jpg
+[33mfa83ae2[m Add files via upload
+[33m84a069f[m Cart & Bottom navigation
+[33mae759aa[m the first step
+[33m67ce197[m Initial commit
