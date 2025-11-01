@@ -104,7 +104,11 @@ class _LoginPageState extends State<LoginPage> {
                           minimumSize: const Size(double.infinity, 50),
                           backgroundColor: Colors.grey[700],
                         ),
+<<<<<<< HEAD
                         child: const Text('Signnnnnnnnn Up'),
+=======
+                        child: const Text('Sign Up'),
+>>>>>>> c4b67b92f12870539a593deabacdede0cfe75ea9
                       ),
                     ],
                   );
