@@ -6,7 +6,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:digital_egypt_pioneers/generated/l10n.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  final Function(Locale) setLocale;
+  const LoginPage({super.key, required this.setLocale});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -42,15 +43,12 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo
                 Image.asset(
                   'assets/images/Logo.jpg',
                   height: 300,
                   width: 300,
                 ),
                 const SizedBox(height: 20),
-
-                // Email field
                 TextField(
                   controller: _emailController,
                   decoration: InputDecoration(
@@ -60,8 +58,6 @@ class _LoginPageState extends State<LoginPage> {
                   keyboardType: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 16),
-
-                // Password field
                 TextField(
                   controller: _passwordController,
                   decoration: InputDecoration(
@@ -71,12 +67,9 @@ class _LoginPageState extends State<LoginPage> {
                   obscureText: true,
                 ),
                 const SizedBox(height: 24),
-
                 BlocBuilder<AuthBloc, AuthState>(
                   builder: (context, state) {
-                    if (state is AuthLoading) {
-                      return const CircularProgressIndicator();
-                    }
+                    if (state is AuthLoading) return const CircularProgressIndicator();
                     return Column(
                       children: [
                         ElevatedButton(
@@ -84,9 +77,7 @@ class _LoginPageState extends State<LoginPage> {
                             final email = _emailController.text.trim();
                             final password = _passwordController.text.trim();
                             if (email.isNotEmpty && password.isNotEmpty) {
-                              context
-                                  .read<AuthBloc>()
-                                  .add(SignInRequested(email, password));
+                              context.read<AuthBloc>().add(SignInRequested(email, password));
                             }
                           },
                           style: ElevatedButton.styleFrom(
@@ -100,9 +91,7 @@ class _LoginPageState extends State<LoginPage> {
                             final email = _emailController.text.trim();
                             final password = _passwordController.text.trim();
                             if (email.isNotEmpty && password.isNotEmpty) {
-                              context
-                                  .read<AuthBloc>()
-                                  .add(SignUpRequested(email, password));
+                              context.read<AuthBloc>().add(SignUpRequested(email, password));
                             }
                           },
                           style: ElevatedButton.styleFrom(
@@ -110,6 +99,21 @@ class _LoginPageState extends State<LoginPage> {
                             backgroundColor: Colors.grey[700],
                           ),
                           child: Text(s.signUp),
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () => widget.setLocale(const Locale('ar')),
+                              child: const Text('عربي'),
+                            ),
+                            const SizedBox(width: 10),
+                            ElevatedButton(
+                              onPressed: () => widget.setLocale(const Locale('en')),
+                              child: const Text('English'),
+                            ),
+                          ],
                         ),
                       ],
                     );

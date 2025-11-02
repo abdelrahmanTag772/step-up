@@ -1,3 +1,4 @@
+import 'package:digital_egypt_pioneers/bloc/cart/cart_bloc.dart';
 import 'package:digital_egypt_pioneers/bloc/cart/cart_event.dart';
 import 'package:digital_egypt_pioneers/bloc/product/product_bloc.dart';
 import 'package:digital_egypt_pioneers/bloc/product/product_event.dart';
@@ -13,7 +14,6 @@ import 'package:digital_egypt_pioneers/bloc/auth/auth_state.dart';
 import 'package:digital_egypt_pioneers/screens/login_page.dart';
 import 'package:digital_egypt_pioneers/services/auth_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:digital_egypt_pioneers/bloc/cart/cart_bloc.dart';
 import 'package:digital_egypt_pioneers/services/firestore_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'generated/l10n.dart';
@@ -32,6 +32,14 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  Locale _locale = const Locale('ar'); // اللغة الافتراضية
+
+  void setLocale(Locale locale) {
+    setState(() {
+      _locale = locale;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final authRepository = AuthRepository();
@@ -39,7 +47,7 @@ class _MyAppState extends State<MyApp> {
     return BlocProvider<AuthBloc>(
       create: (context) => AuthBloc(authRepository: authRepository),
       child: MaterialApp(
-        locale: const Locale('ar'), 
+        locale: _locale,
         localizationsDelegates: const [
           S.delegate,
           GlobalMaterialLocalizations.delegate,
@@ -49,25 +57,8 @@ class _MyAppState extends State<MyApp> {
         supportedLocales: S.delegate.supportedLocales,
         debugShowCheckedModeBanner: false,
         title: 'Step Up APP',
-        theme: ThemeData(
+        theme: ThemeData.dark().copyWith(
           scaffoldBackgroundColor: const Color(0xFF1F1F21),
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.deepPurple,
-            brightness: Brightness.dark,
-          ),
-          textTheme: const TextTheme(
-            bodyLarge: TextStyle(color: Colors.white),
-            bodyMedium: TextStyle(color: Colors.white),
-          ),
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Color(0xFF1F1F21),
-            titleTextStyle: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-            iconTheme: IconThemeData(color: Colors.white),
-          ),
         ),
         home: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
@@ -85,10 +76,10 @@ class _MyAppState extends State<MyApp> {
                     )..add(LoadProducts()),
                   ),
                 ],
-                child: const MainScreen(),
+                child: MainScreen(setLocale: setLocale),
               );
             }
-            return const LoginPage();
+            return LoginPage(setLocale: setLocale);
           },
         ),
       ),
@@ -97,7 +88,8 @@ class _MyAppState extends State<MyApp> {
 }
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  final Function(Locale) setLocale;
+  const MainScreen({super.key, required this.setLocale});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -106,20 +98,14 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _widgetOptions = <Widget>[
-    Homescreen(),
-    CartListScreen(),
-    ProfileScreen(),
-  ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    final _widgetOptions = <Widget>[
+      const Homescreen(),
+      const CartListScreen(),
+      ProfileScreen(setLocale: widget.setLocale),
+    ];
+
     return Scaffold(
       body: Center(child: _widgetOptions.elementAt(_selectedIndex)),
       bottomNavigationBar: BottomNavigationBar(
@@ -139,7 +125,7 @@ class _MainScreenState extends State<MainScreen> {
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.amber[800],
-        onTap: _onItemTapped,
+        onTap: (index) => setState(() => _selectedIndex = index),
         backgroundColor: const Color(0xFF1F1F21),
         unselectedItemColor: Colors.white,
       ),

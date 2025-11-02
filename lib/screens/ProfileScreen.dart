@@ -6,15 +6,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:digital_egypt_pioneers/generated/l10n.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+  final Function(Locale) setLocale;
+  const ProfileScreen({super.key, required this.setLocale});
 
   @override
   Widget build(BuildContext context) {
-    final local = S.of(context); 
+    final local = S.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(local.profile), 
+        title: Text(local.profile),
         centerTitle: true,
       ),
       body: BlocBuilder<AuthBloc, AuthState>(
@@ -31,18 +32,15 @@ class ProfileScreen extends StatelessWidget {
                       backgroundColor: Colors.blue.shade100,
                       child: Text(
                         state.user.email?.substring(0,1).toUpperCase() ?? "U",
-                        style: const TextStyle(
-                          fontSize: 40,
-                          color: Colors.white,
-                        ),
+                        style: const TextStyle(fontSize: 40, color: Colors.white),
                       ),
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      local.welcome, 
+                      local.welcome,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                        fontWeight: FontWeight.bold,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
@@ -55,9 +53,7 @@ class ProfileScreen extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed: () {
-                          context.read<AuthBloc>().add(SignOutRequested());
-                        },
+                        onPressed: () => context.read<AuthBloc>().add(SignOutRequested()),
                         icon: const Icon(Icons.logout),
                         label: Text(local.logout),
                         style: ElevatedButton.styleFrom(
@@ -66,6 +62,21 @@ class ProfileScreen extends StatelessWidget {
                           textStyle: const TextStyle(fontSize: 18),
                         ),
                       ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () => setLocale(const Locale('ar')),
+                          child: const Text('عربي'),
+                        ),
+                        const SizedBox(width: 10),
+                        ElevatedButton(
+                          onPressed: () => setLocale(const Locale('en')),
+                          child: const Text('English'),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -78,4 +89,3 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 }
-
