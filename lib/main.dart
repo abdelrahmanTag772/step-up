@@ -15,6 +15,8 @@ import 'package:digital_egypt_pioneers/services/auth_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:digital_egypt_pioneers/bloc/cart/cart_bloc.dart';
 import 'package:digital_egypt_pioneers/services/firestore_service.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'generated/l10n.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,8 +39,16 @@ class _MyAppState extends State<MyApp> {
     return BlocProvider<AuthBloc>(
       create: (context) => AuthBloc(authRepository: authRepository),
       child: MaterialApp(
+        locale: const Locale('ar'), 
+        localizationsDelegates: const [
+          S.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: S.delegate.supportedLocales,
         debugShowCheckedModeBanner: false,
-        title: 'Flutter Demo',
+        title: 'Step Up APP',
         theme: ThemeData(
           scaffoldBackgroundColor: const Color(0xFF1F1F21),
           colorScheme: ColorScheme.fromSeed(
@@ -48,17 +58,6 @@ class _MyAppState extends State<MyApp> {
           textTheme: const TextTheme(
             bodyLarge: TextStyle(color: Colors.white),
             bodyMedium: TextStyle(color: Colors.white),
-            displayLarge: TextStyle(color: Colors.white),
-            displayMedium: TextStyle(color: Colors.white),
-            displaySmall: TextStyle(color: Colors.white),
-            headlineMedium: TextStyle(color: Colors.white),
-            headlineSmall: TextStyle(color: Colors.white),
-            titleLarge: TextStyle(color: Colors.white),
-            titleMedium: TextStyle(color: Colors.white),
-            titleSmall: TextStyle(color: Colors.white),
-            bodySmall: TextStyle(color: Colors.white),
-            labelLarge: TextStyle(color: Colors.white),
-            labelSmall: TextStyle(color: Colors.white),
           ),
           appBarTheme: const AppBarTheme(
             backgroundColor: Color(0xFF1F1F21),
@@ -76,12 +75,14 @@ class _MyAppState extends State<MyApp> {
               return MultiBlocProvider(
                 providers: [
                   BlocProvider<CartBloc>(
-                    create: (context) =>
-                        CartBloc(firestoreService: FirestoreService())..add(LoadCarts(state.user.uid)),
+                    create: (context) => CartBloc(
+                      firestoreService: FirestoreService(),
+                    )..add(LoadCarts(state.user.uid)),
                   ),
                   BlocProvider<ProductBloc>(
-                    create: (context) =>
-                        ProductBloc(productRepository: FakeProductRepository())..add(LoadProducts()),
+                    create: (context) => ProductBloc(
+                      productRepository: FakeProductRepository(),
+                    )..add(LoadProducts()),
                   ),
                 ],
                 child: const MainScreen(),
@@ -122,13 +123,19 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       body: Center(child: _widgetOptions.elementAt(_selectedIndex)),
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: 'Cart',
+            icon: const Icon(Icons.home),
+            label: S.of(context).home,
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.shopping_cart),
+            label: S.of(context).cart,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.person),
+            label: S.of(context).profile,
+          ),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.amber[800],

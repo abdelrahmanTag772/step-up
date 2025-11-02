@@ -12,6 +12,7 @@ import 'package:digital_egypt_pioneers/bloc/cart_detail/cart_detail_bloc.dart';
 import 'package:digital_egypt_pioneers/screens/CartScreen.dart';
 import 'package:digital_egypt_pioneers/services/firestore_service.dart';
 import 'package:digital_egypt_pioneers/services/product_repository.dart';
+import 'package:digital_egypt_pioneers/generated/l10n.dart'; 
 
 class CartListScreen extends StatefulWidget {
   const CartListScreen({super.key});
@@ -33,7 +34,6 @@ class _CartListScreenState extends State<CartListScreen>
     final authState = context.read<AuthBloc>().state;
     if (authState is Authenticated) {
       _userId = authState.user.uid;
-      // Load carts immediately
       context.read<CartBloc>().add(LoadCarts(_userId));
     }
   }
@@ -44,18 +44,19 @@ class _CartListScreenState extends State<CartListScreen>
     super.dispose();
   }
 
-  // --- NEW: Confirmation Dialog ---
+  // --- Confirmation Dialog ---
   void _showDeleteConfirmationDialog(
-      BuildContext context, {
-        required String cartId,
-        required String cartName,
-        required bool isOwner,
-      }) {
-    final title = isOwner ? 'Delete List?' : 'Leave List?';
+    BuildContext context, {
+    required String cartId,
+    required String cartName,
+    required bool isOwner,
+  }) {
+    final loc = S.of(context);
+    final title = isOwner ? loc.deleteList : loc.leaveList;
     final content = isOwner
-        ? 'Are you sure you want to permanently delete "$cartName"?'
-        : 'Are you sure you want to leave "$cartName"? You will lose access unless you are invited again.';
-    final actionText = isOwner ? 'Delete' : 'Leave';
+        ? loc.deleteConfirmation(cartName)
+        : loc.leaveConfirmation(cartName);
+    final actionText = isOwner ? loc.delete : loc.leave;
 
     showDialog(
       context: context,
@@ -65,11 +66,14 @@ class _CartListScreenState extends State<CartListScreen>
           content: Text(content),
           actions: [
             TextButton(
-              child: const Text('Cancel'),
+              child: Text(loc.cancel),
               onPressed: () => Navigator.of(dialogContext).pop(),
             ),
             TextButton(
-              child: Text(actionText, style: const TextStyle(color: Colors.redAccent)),
+              child: Text(
+                actionText,
+                style: const TextStyle(color: Colors.redAccent),
+              ),
               onPressed: () {
                 if (isOwner) {
                   context.read<CartBloc>().add(DeleteCart(cartId));
@@ -87,31 +91,30 @@ class _CartListScreenState extends State<CartListScreen>
 
   @override
   Widget build(BuildContext context) {
+    final loc = S.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Shopping Lists'),
+        title: Text(loc.myShoppingLists),
         centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: 'My Lists'),
-            Tab(text: 'Shared With Me'),
+          tabs: [
+            Tab(text: loc.myLists),
+            Tab(text: loc.sharedWithMe),
           ],
         ),
       ),
       body: BlocListener<CartBloc, CartState>(
-        // NEW: Listen for action errors
         listener: (context, state) {
-          if (state is CartsLoaded) {
-            if (state.actionError != null) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.actionError!),
-                  backgroundColor: Colors.redAccent,
-                ),
-              );
-              context.read<CartBloc>().add(ClearCartActionError());
-            }
+          if (state is CartsLoaded && state.actionError != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.actionError!),
+                backgroundColor: Colors.redAccent,
+              ),
+            );
+            context.read<CartBloc>().add(ClearCartActionError());
           }
         },
         child: BlocBuilder<CartBloc, CartState>(
@@ -123,17 +126,15 @@ class _CartListScreenState extends State<CartListScreen>
               return TabBarView(
                 controller: _tabController,
                 children: [
-                  // "My Lists" Tab
                   _buildCartListView(context, state.ownedCarts, isOwner: true),
-                  // "Shared With Me" Tab
                   _buildCartListView(context, state.sharedCarts, isOwner: false),
                 ],
               );
             }
             if (state is CartsError) {
-              return Center(child: Text('Error: ${state.message}'));
+              return Center(child: Text('${loc.error}: ${state.message}'));
             }
-            return const Center(child: Text('Welcome to your carts!'));
+            return Center(child: Text(loc.welcomeToYourCarts));
           },
         ),
       ),
@@ -144,34 +145,32 @@ class _CartListScreenState extends State<CartListScreen>
     );
   }
 
-  // UPDATED: Added isOwner parameter
   Widget _buildCartListView(
-      BuildContext context,
-      List<QueryDocumentSnapshot> carts, {
-        required bool isOwner,
-      }) {
+    BuildContext context,
+    List<QueryDocumentSnapshot> carts, {
+    required bool isOwner,
+  }) {
+    final loc = S.of(context);
+
     if (carts.isEmpty) {
-      return const Center(
-        child: Text('No lists in this category.'),
-      );
+      return Center(child: Text(loc.noLists));
     }
+
     return ListView.builder(
       itemCount: carts.length,
       itemBuilder: (context, index) {
         final cart = carts[index].data() as Map<String, dynamic>;
         final cartId = carts[index].id;
-        final cartName = cart['name'] ?? 'Unnamed List';
+        final cartName = cart['name'] ?? loc.unnamedList;
 
         return ListTile(
           title: Text(cartName),
-          // UPDATED: Trailing icon
           trailing: IconButton(
             icon: Icon(
               Icons.delete_outline,
               color: isOwner ? Colors.redAccent : Colors.grey[400],
             ),
             onPressed: () {
-              // Call the new confirmation dialog
               _showDeleteConfirmationDialog(
                 context,
                 cartId: cartId,
@@ -188,9 +187,7 @@ class _CartListScreenState extends State<CartListScreen>
                 builder: (context) {
                   return MultiBlocProvider(
                     providers: [
-                      BlocProvider.value(
-                        value: cartBloc,
-                      ),
+                      BlocProvider.value(value: cartBloc),
                       BlocProvider(
                         create: (context) => CartDetailBloc(
                           firestoreService: FirestoreService(),
@@ -210,24 +207,26 @@ class _CartListScreenState extends State<CartListScreen>
   }
 
   void _showAddCartDialog(BuildContext screenContext, String userId) {
+    final loc = S.of(screenContext);
     final TextEditingController nameController = TextEditingController();
+
     showDialog(
       context: screenContext,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('New Shopping List'),
+          title: Text(loc.newShoppingList),
           content: TextField(
             controller: nameController,
-            decoration: const InputDecoration(hintText: "Enter list name"),
+            decoration: InputDecoration(hintText: loc.enterListName),
             autofocus: true,
           ),
           actions: [
             TextButton(
-              child: const Text('Cancel'),
+              child: Text(loc.cancel),
               onPressed: () => Navigator.of(dialogContext).pop(),
             ),
             TextButton(
-              child: const Text('Add'),
+              child: Text(loc.add),
               onPressed: () {
                 final listName = nameController.text.trim();
                 if (listName.isNotEmpty) {

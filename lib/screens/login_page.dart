@@ -3,6 +3,7 @@ import 'package:digital_egypt_pioneers/bloc/auth/auth_event.dart';
 import 'package:digital_egypt_pioneers/bloc/auth/auth_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:digital_egypt_pioneers/generated/l10n.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -24,12 +25,14 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context);
+
     return Scaffold(
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
+              SnackBar(content: Text(state.message.isNotEmpty ? state.message : s.loginError)),
             );
           }
         },
@@ -46,28 +49,29 @@ class _LoginPageState extends State<LoginPage> {
                   width: 300,
                 ),
                 const SizedBox(height: 20),
-                
+
                 // Email field
                 TextField(
                   controller: _emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: s.email,
+                    border: const OutlineInputBorder(),
                   ),
                   keyboardType: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 16),
+
                 // Password field
                 TextField(
                   controller: _passwordController,
-                  decoration: const InputDecoration(
-                    labelText: 'Password',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: s.password,
+                    border: const OutlineInputBorder(),
                   ),
                   obscureText: true,
                 ),
                 const SizedBox(height: 24),
-                // BlocBuilder for loading
+
                 BlocBuilder<AuthBloc, AuthState>(
                   builder: (context, state) {
                     if (state is AuthLoading) {
@@ -75,7 +79,6 @@ class _LoginPageState extends State<LoginPage> {
                     }
                     return Column(
                       children: [
-                        // Sign In button
                         ElevatedButton(
                           onPressed: () {
                             final email = _emailController.text.trim();
@@ -89,10 +92,9 @@ class _LoginPageState extends State<LoginPage> {
                           style: ElevatedButton.styleFrom(
                             minimumSize: const Size(double.infinity, 50),
                           ),
-                          child: const Text('Sign In'),
+                          child: Text(s.signIn),
                         ),
                         const SizedBox(height: 12),
-                        // Sign Up button
                         ElevatedButton(
                           onPressed: () {
                             final email = _emailController.text.trim();
@@ -107,7 +109,7 @@ class _LoginPageState extends State<LoginPage> {
                             minimumSize: const Size(double.infinity, 50),
                             backgroundColor: Colors.grey[700],
                           ),
-                          child: const Text('Sign Up'),
+                          child: Text(s.signUp),
                         ),
                       ],
                     );

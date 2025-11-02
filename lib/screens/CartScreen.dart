@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:digital_egypt_pioneers/bloc/auth/auth_bloc.dart';
 import 'package:digital_egypt_pioneers/bloc/auth/auth_state.dart';
+import 'package:digital_egypt_pioneers/generated/l10n.dart'; 
 
 class CartScreen extends StatefulWidget {
   final String cartId;
@@ -29,34 +30,33 @@ class _CartScreenState extends State<CartScreen> {
     context.read<CartDetailBloc>().add(LoadCartDetails(widget.cartId));
   }
 
-  // --- (Other dialogs: _showAddItemDialog, _showShareDialog, _showCollaboratorsDialog remain unchanged) ---
-
   void _showShareDialog(BuildContext context) {
+    final loc = S.of(context);
     final TextEditingController emailController = TextEditingController();
     showDialog(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Share List'),
+          title: Text(loc.shareList),
           content: TextField(
             controller: emailController,
-            decoration: const InputDecoration(hintText: "Enter user's email"),
+            decoration: InputDecoration(hintText: loc.enterUserEmail),
             keyboardType: TextInputType.emailAddress,
             autofocus: true,
           ),
           actions: [
             TextButton(
-              child: const Text('Cancel'),
+              child: Text(loc.cancel),
               onPressed: () => Navigator.of(dialogContext).pop(),
             ),
             TextButton(
-              child: const Text('Share'),
+              child: Text(loc.share),
               onPressed: () {
                 final email = emailController.text.trim();
                 if (email.isNotEmpty) {
                   context.read<CartDetailBloc>().add(
-                    ShareCart(widget.cartId, email),
-                  );
+                        ShareCart(widget.cartId, email),
+                      );
                   Navigator.of(dialogContext).pop();
                 }
               },
@@ -68,21 +68,20 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   void _showCollaboratorsDialog(
-      BuildContext context,
-      List<Map<String, dynamic>> collaborators,
-      ) {
+      BuildContext context, List<Map<String, dynamic>> collaborators) {
+    final loc = S.of(context);
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Collaborators'),
+          title: Text(loc.collaborators),
           content: SizedBox(
             width: double.maxFinite,
             child: ListView.builder(
               shrinkWrap: true,
               itemCount: collaborators.length,
               itemBuilder: (context, index) {
-                final email = collaborators[index]['email'] ?? 'Unknown user';
+                final email = collaborators[index]['email'] ?? '—';
                 return ListTile(
                   leading: const Icon(Icons.person),
                   title: Text(email),
@@ -92,7 +91,7 @@ class _CartScreenState extends State<CartScreen> {
           ),
           actions: [
             TextButton(
-              child: const Text('Close'),
+              child: Text(loc.close),
               onPressed: () => Navigator.of(context).pop(),
             ),
           ],
@@ -101,31 +100,30 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  // --- NEW: Confirmation dialog for removing an item ---
   void _showRemoveConfirmationDialog(BuildContext context, Shoe shoe) {
+    final loc = S.of(context);
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Remove Item?'),
-        content: Text('Are you sure you want to remove ${shoe.name} from this list?'),
+        title: Text(loc.removeItem),
+        content: Text(loc.removeItemConfirm(shoe.name)),
         actions: [
           TextButton(
-            child: const Text('Cancel'),
+            child: Text(loc.cancel),
             onPressed: () => Navigator.of(dialogContext).pop(),
           ),
           TextButton(
-            child: const Text('Remove', style: TextStyle(color: Colors.redAccent)),
+            child:
+                Text(loc.remove, style: const TextStyle(color: Colors.redAccent)),
             onPressed: () {
               setState(() {
-                // Remove the item from the local map
                 _localItemAmounts.remove(shoe.id);
-                // Mark that we have changes to save
                 _hasChanges = true;
               });
               Navigator.of(dialogContext).pop();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('${shoe.name} removed. Press save to confirm.'),
+                  content: Text(loc.itemRemoved(shoe.name)),
                   backgroundColor: Colors.redAccent,
                 ),
               );
@@ -138,6 +136,7 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = S.of(context);
     final currentUserId =
         (context.watch<AuthBloc>().state as Authenticated).user.uid;
 
@@ -159,6 +158,7 @@ class _CartScreenState extends State<CartScreen> {
             );
             context.read<CartDetailBloc>().add(ClearActionError());
           }
+
           if (state.actionSuccess != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -166,7 +166,7 @@ class _CartScreenState extends State<CartScreen> {
                 backgroundColor: Colors.green,
               ),
             );
-            if (state.actionSuccess == "Cart saved successfully!") {
+            if (state.actionSuccess == loc.cartSavedSuccessfully) {
               setState(() {
                 _hasChanges = false;
               });
@@ -177,7 +177,7 @@ class _CartScreenState extends State<CartScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Shopping Cart'),
+          title: Text(loc.shoppingCart),
           actions: [
             IconButton(
               icon: Icon(
@@ -186,10 +186,10 @@ class _CartScreenState extends State<CartScreen> {
               ),
               onPressed: _hasChanges
                   ? () {
-                context.read<CartDetailBloc>().add(
-                  UpdateCartItems(widget.cartId, _localItemAmounts),
-                );
-              }
+                      context.read<CartDetailBloc>().add(
+                            UpdateCartItems(widget.cartId, _localItemAmounts),
+                          );
+                    }
                   : null,
             ),
             BlocBuilder<CartDetailBloc, CartDetailState>(
@@ -225,18 +225,16 @@ class _CartScreenState extends State<CartScreen> {
             if (state is CartDetailLoading) {
               return const Center(child: CircularProgressIndicator());
             }
+
             if (state is CartDetailLoaded) {
               final List<Shoe> items = state.items;
-
-              // NEW: Filter items based on our local map
-              final List<Shoe> itemsToShow = items.where((shoe) {
-                return _localItemAmounts.containsKey(shoe.id);
-              }).toList();
+              final List<Shoe> itemsToShow = items
+                  .where((shoe) => _localItemAmounts.containsKey(shoe.id))
+                  .toList();
 
               if (itemsToShow.isEmpty) {
-                // Check if the original list was empty or if local changes emptied it
                 if (state.itemsMap.isEmpty) {
-                  return const Center(child: Text('This list has no items yet.'));
+                  return Center(child: Text(loc.cartEmpty));
                 }
                 return Center(
                   child: Padding(
@@ -244,17 +242,19 @@ class _CartScreenState extends State<CartScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.info_outline, size: 60, color: Colors.amber),
+                        const Icon(Icons.info_outline,
+                            size: 60, color: Colors.amber),
                         const SizedBox(height: 16),
-                        const Text(
-                          'All items have been removed.',
-                          style: TextStyle(fontSize: 18),
+                        Text(
+                          loc.allItemsRemoved,
+                          style: const TextStyle(fontSize: 18),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 8),
-                        const Text(
-                          'Press the Save button to confirm your changes.',
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        Text(
+                          loc.pressSaveToConfirm,
+                          style: const TextStyle(
+                              fontSize: 16, color: Colors.grey),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -264,9 +264,9 @@ class _CartScreenState extends State<CartScreen> {
               }
 
               return ListView.builder(
-                itemCount: itemsToShow.length, // Use the filtered list
+                itemCount: itemsToShow.length,
                 itemBuilder: (context, index) {
-                  final shoe = itemsToShow[index]; // Use the filtered list
+                  final shoe = itemsToShow[index];
                   final amount = _localItemAmounts[shoe.id] ?? 0;
 
                   return GestureDetector(
@@ -282,18 +282,15 @@ class _CartScreenState extends State<CartScreen> {
                         });
                       },
                       onDecrement: () {
-                        // UPDATED: Allow decrementing to 0, but show confirmation
                         if (amount > 1) {
                           setState(() {
                             _localItemAmounts[shoe.id] = amount - 1;
                             _hasChanges = true;
                           });
                         } else if (amount == 1) {
-                          // If at 1, trigger the remove confirmation
                           _showRemoveConfirmationDialog(context, shoe);
                         }
                       },
-                      // UPDATED: Pass the new remove callback
                       onRemove: () {
                         _showRemoveConfirmationDialog(context, shoe);
                       },
@@ -314,10 +311,12 @@ class _CartScreenState extends State<CartScreen> {
                 },
               );
             }
+
             if (state is CartDetailError) {
-              return Center(child: Text('Error: ${state.message}'));
+              return Center(child: Text('${loc.error}: ${state.message}'));
             }
-            return const Center(child: Text('Loading cart...'));
+
+            return Center(child: Text(loc.cartLoading));
           },
         ),
       ),
