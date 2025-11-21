@@ -68,14 +68,16 @@ class _HomescreenState extends State<Homescreen> {
                           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                         ),
                         const SizedBox(height: 16),
-                        if (state.ownedCarts.isNotEmpty)
+                        if (state.ownedCarts.isNotEmpty || state.sharedCarts.isNotEmpty)
                           SizedBox(
                             height: 150,
                             child: ListView.builder(
                               shrinkWrap: true,
-                              itemCount: state.ownedCarts.length,
+                              itemCount: state.ownedCarts.length + state.sharedCarts.length,
                               itemBuilder: (context, index) {
-                                final cart = state.ownedCarts[index];
+                                final cart = state.ownedCarts.length > index
+                                    ? state.ownedCarts[index]
+                                    : state.sharedCarts[index - state.ownedCarts.length];
                                 final cartData = cart.data() as Map<String, dynamic>;
                                 final cartName = cartData['name'] ?? loc.unnamedList;
 
